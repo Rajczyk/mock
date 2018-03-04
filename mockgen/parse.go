@@ -437,10 +437,13 @@ func importsOfFile(file *ast.File) map[string]string {
 			_, last := path.Split(importPath)
 			pkg = strings.SplitN(last, ".", 2)[0]
 		}
-		if _, ok := m[pkg]; ok {
+		if _, ok := m[pkg]; !ok {
+			m[pkg] = importPath
+		} else if m[pkg] != importPath &&
+			m[pkg] != strings.Join([]string{"golang.org/x/net", importPath}, "/") &&
+			importPath != strings.TrimPrefix("golang.org/x/net/",  m[pkg])	{
 			log.Fatalf("imported package collision: %q imported twice", pkg)
 		}
-		m[pkg] = importPath
 	}
 	return m
 }
